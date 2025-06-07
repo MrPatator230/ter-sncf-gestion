@@ -1,5 +1,5 @@
 // Fonction pour extraire toutes les gares uniques d'un horaire
-const extractStationsFromSchedule = (schedule) => {
+export const extractStationsFromSchedule = (schedule) => {
   const stations = new Set();
   stations.add(schedule.departureStation);
   stations.add(schedule.arrivalStation);

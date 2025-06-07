@@ -20,11 +20,6 @@ self.__BUILD_MANIFEST = {
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
-    "/admin/compositions-trains": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/admin/compositions-trains.js"
-    ],
     "/admin/gestion-horaires": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
