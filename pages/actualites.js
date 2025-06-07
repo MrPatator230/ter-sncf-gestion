@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+
 
 export default function Actualites() {
   const [newsPosts, setNewsPosts] = useState([]);
@@ -37,41 +40,7 @@ export default function Actualites() {
 
   return (
     <>
-      <header className="bg-white shadow mb-4">
-        <nav className="container navbar navbar-expand-lg navbar-light">
-          <a className="navbar-brand fw-bold" href="#">TER Bourgogne - Franche-Comté</a>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav ms-auto">
-              <li className="nav-item">
-                <a className="nav-link " aria-current="page" href="/">Accueil</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="/horaires-par-gares">Horaires</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link active" href="/actualites">Actualités</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="/prochains-departs">Prochains Départs</a>
-              </li>
-              <li className="nav-item">
-                <a className="btn btn-outline-success ms-3" href="/login">Se connecter</a>
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </header>
+      <Header />
 
       <div className="container my-5">
         <h1>Actualités</h1>
@@ -171,6 +140,8 @@ export default function Actualites() {
           </div>
         )}
       </div>
+
+      <Footer />
     </>
   );
 }

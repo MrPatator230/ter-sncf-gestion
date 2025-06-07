@@ -1,8 +1,7 @@
+import React, { useContext, useEffect, useState } from 'react';
 import Header from '../components/Header';
-import { useContext, useEffect, useState } from 'react';
 import { SettingsContext } from '../contexts/SettingsContext';
 import buttonStyles from '../styles/buttons.module.css';
-import Footer from '../components/Footer';
 import Layout from '../components/Layout';
 
 const logoNameMap = {
@@ -19,7 +18,7 @@ const logoNameMap = {
   '/images/logo-ter-pddl.svg': 'SNCF TER PDDL',
 };
 
-function InfosTrafficsWidget() {
+function InfosTrafficsWidget({ onSelectInfo }) {
   const [trafficInfos, setTrafficInfos] = useState([]);
 
   useEffect(() => {
@@ -44,22 +43,29 @@ function InfosTrafficsWidget() {
     <div className="sncf-card h-100">
       <div className="sncf-card-body">
         <h2 className="h4 mb-3">Infos Traffics</h2>
-        <ul className="list-unstyled">
+        <div className="d-flex flex-wrap gap-3">
           {trafficInfos.map(info => (
-            <li key={info.id} className="mb-3">
-              <strong>{info.title}</strong><br />
-              <small>{info.startDate || '-'} {info.endDate ? `à ${info.endDate}` : ''}</small><br />
-              <span>{info.description}</span><br />
+            <div
+              key={info.id}
+              className="card p-3"
+              style={{ cursor: 'pointer', minWidth: '250px', maxWidth: '300px' }}
+              onClick={() => onSelectInfo(info)}
+            >
+              <h5>{info.title}</h5>
+              <small>{info.startDate || '-'} {info.endDate ? `à ${info.endDate}` : ''}</small>
+              <p className="mb-1">{info.description.length > 100 ? info.description.substring(0, 100) + '...' : info.description}</p>
               <span className={`badge bg-secondary`}>{info.impactType}</span>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );
 }
 
-function ActualitesWidget() {
+
+
+function ActualitesWidget({ onSelectPost }) {
   const [newsPosts, setNewsPosts] = useState([]);
 
   useEffect(() => {
@@ -93,7 +99,12 @@ function ActualitesWidget() {
         <h2 className="h4 mb-3">Actualités</h2>
         <ul className="list-unstyled">
           {newsPosts.map(post => (
-            <li key={post.id} className="mb-3">
+            <li
+              key={post.id}
+              className="mb-3"
+              style={{ cursor: 'pointer' }}
+              onClick={() => onSelectPost(post)}
+            >
               <strong>{post.title}</strong><br />
               <small>{post.date && !isNaN(new Date(post.date)) ? new Date(post.date).toLocaleDateString() : ''}</small><br />
               <p>{post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content}</p>
@@ -113,6 +124,12 @@ export default function Home() {
   const { logoUrl } = useContext(SettingsContext);
   const displayName = logoNameMap[logoUrl] || 'SNCF TER Mobigo';
 
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedInfo, setSelectedInfo] = useState(null);
+
+  const closePostModal = () => setSelectedPost(null);
+  const closeInfoModal = () => setSelectedInfo(null);
+
   return (
     <>
       <div className="main-wrapper">
@@ -123,11 +140,11 @@ export default function Home() {
 
               <div className="row g-4">
                 <div className="col-md-6">
-                  <ActualitesWidget />
+                  <ActualitesWidget onSelectPost={setSelectedPost} />
                 </div>
 
                 <div className="col-md-6">
-                  <InfosTrafficsWidget />
+                  <InfosTrafficsWidget onSelectInfo={setSelectedInfo} />
                 </div>
 
                 <div className="col-md-6">
@@ -172,8 +189,71 @@ export default function Home() {
             </div>
           </main>
         </Layout>
-        <Footer />
+     
       </div>
+
+      {/* Modal for Actualité */}
+      {selectedPost && (
+        <div
+          className="modal fade show"
+          style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+          tabIndex="-1"
+          role="dialog"
+          onClick={closePostModal}
+        >
+          <div
+            className="modal-dialog modal-lg"
+            role="document"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{selectedPost.title}</h5>
+                <button type="button" className="btn-close" aria-label="Close" onClick={closePostModal}></button>
+              </div>
+              <div className="modal-body">
+                <small className="text-muted">{selectedPost.date && !isNaN(new Date(selectedPost.date)) ? new Date(selectedPost.date).toLocaleDateString() : ''}</small>
+                <p>{selectedPost.content}</p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={closePostModal}>Fermer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Info Traffic */}
+      {selectedInfo && (
+        <div
+          className="modal fade show"
+          style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+          tabIndex="-1"
+          role="dialog"
+          onClick={closeInfoModal}
+        >
+          <div
+            className="modal-dialog modal-lg"
+            role="document"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{selectedInfo.title}</h5>
+                <button type="button" className="btn-close" aria-label="Close" onClick={closeInfoModal}></button>
+              </div>
+              <div className="modal-body">
+                <small className="text-muted">{selectedInfo.startDate || '-'} {selectedInfo.endDate ? `à ${selectedInfo.endDate}` : ''}</small>
+                <p>{selectedInfo.description}</p>
+                <span className={`badge bg-secondary`}>{selectedInfo.impactType}</span>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={closeInfoModal}>Fermer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <style jsx>{`
         .sncf-card {
           border-color: var(--primary-color);

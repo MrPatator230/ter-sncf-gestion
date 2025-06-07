@@ -1,0 +1,9 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/stations": "pages/stations.js",
+  "/admin/compositions-trains": "pages/admin/compositions-trains.js",
+  "/admin/horaires": "pages/admin/horaires.js",
+  "/admin/gestion-horaires": "pages/admin/gestion-horaires.js"
+}
