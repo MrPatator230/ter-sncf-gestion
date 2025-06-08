@@ -24,16 +24,25 @@ export default function GestionActualites() {
     }
   }, [isAuthenticated, role]);
 
+  // Fetch news posts from backend API
   useEffect(() => {
-    const savedNews = localStorage.getItem('newsPosts');
-    if (savedNews) {
-      setNewsPosts(JSON.parse(savedNews));
+    async function fetchNewsPosts() {
+      try {
+        const response = await fetch('/news_posts');
+        if (!response.ok) {
+          throw new Error('Failed to fetch news posts');
+        }
+        const data = await response.json();
+        setNewsPosts(data);
+      } catch (error) {
+        console.error(error);
+      }
     }
+    fetchNewsPosts();
   }, []);
 
   const saveNewsPosts = (posts) => {
     setNewsPosts(posts);
-    localStorage.setItem('newsPosts', JSON.stringify(posts));
   };
 
   const handleInputChange = (e) => {
@@ -53,38 +62,95 @@ export default function GestionActualites() {
     }
   };
 
-  const handleSubmit = (e) => {
+  // Upload file helper function
+  async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error('File upload failed');
+    }
+    const data = await response.json();
+    return data.url; // Assuming the API returns the uploaded file URL
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title || !form.content || (!form.date && form.scheduled)) {
       alert('Veuillez remplir tous les champs requis.');
       return;
     }
-    const postToSave = {
-      ...form,
-      id: editingPost ? editingPost.id : Date.now(),
-      icon: form.icon ? URL.createObjectURL(form.icon) : editingPost ? editingPost.icon : null,
-      attachments: form.attachments.length > 0 ? form.attachments.map(file => ({
-        name: file.name,
-        url: URL.createObjectURL(file),
-      })) : editingPost ? editingPost.attachments : [],
-    };
-    let updatedPosts;
-    if (editingPost) {
-      updatedPosts = newsPosts.map(post => post.id === editingPost.id ? postToSave : post);
-    } else {
-      updatedPosts = [postToSave, ...newsPosts];
+
+    try {
+      let iconUrl = null;
+      if (form.icon && form.icon instanceof File) {
+        iconUrl = await uploadFile(form.icon);
+      } else if (editingPost) {
+        iconUrl = editingPost.icon;
+      }
+
+      let attachmentsUrls = [];
+      if (form.attachments.length > 0) {
+        for (const file of form.attachments) {
+          if (file instanceof File) {
+            const url = await uploadFile(file);
+            attachmentsUrls.push({ name: file.name, url });
+          } else {
+            attachmentsUrls.push(file);
+          }
+        }
+      } else if (editingPost) {
+        attachmentsUrls = editingPost.attachments || [];
+      }
+
+      const postData = {
+        title: form.title,
+        content: form.content,
+        date: form.date,
+        attachments: attachmentsUrls,
+      };
+
+      let response;
+      if (editingPost) {
+        response = await fetch(`/news_posts/${editingPost.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(postData),
+        });
+      } else {
+        response = await fetch('/news_posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(postData),
+        });
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to save news post');
+      }
+
+      // Refresh news posts list
+      const updatedResponse = await fetch('/news_posts');
+      const updatedPosts = await updatedResponse.json();
+      saveNewsPosts(updatedPosts);
+
+      setForm({
+        id: null,
+        title: '',
+        date: '',
+        scheduled: false,
+        content: '',
+        icon: null,
+        attachments: [],
+      });
+      setEditingPost(null);
+    } catch (error) {
+      console.error(error);
+      alert('Erreur lors de la sauvegarde de l\'actualité.');
     }
-    saveNewsPosts(updatedPosts);
-    setForm({
-      id: null,
-      title: '',
-      date: '',
-      scheduled: false,
-      content: '',
-      icon: null,
-      attachments: [],
-    });
-    setEditingPost(null);
   };
 
   const handleEdit = (post) => {
@@ -100,10 +166,23 @@ export default function GestionActualites() {
     });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Voulez-vous vraiment supprimer cette actualité ?')) {
-      const updatedPosts = newsPosts.filter(post => post.id !== id);
-      saveNewsPosts(updatedPosts);
+      try {
+        const response = await fetch(`/news_posts/${id}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete news post');
+        }
+        // Refresh news posts list
+        const updatedResponse = await fetch('/news_posts');
+        const updatedPosts = await updatedResponse.json();
+        saveNewsPosts(updatedPosts);
+      } catch (error) {
+        console.error(error);
+        alert('Erreur lors de la suppression de l\'actualité.');
+      }
     }
   };
 
@@ -174,7 +253,7 @@ export default function GestionActualites() {
               />
               {form.icon && (
                 <img
-                  src={URL.createObjectURL(form.icon)}
+                  src={form.icon instanceof File ? URL.createObjectURL(form.icon) : form.icon}
                   alt="Icon preview"
                   style={{ maxWidth: '100px', marginTop: '10px' }}
                 />

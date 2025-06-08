@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-
 export default function Actualites() {
   const [newsPosts, setNewsPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -10,10 +9,17 @@ export default function Actualites() {
   const postsPerPage = 10;
 
   useEffect(() => {
-    const savedNews = localStorage.getItem('newsPosts');
-    if (savedNews) {
-      setNewsPosts(JSON.parse(savedNews));
+    async function fetchNews() {
+      try {
+        const res = await fetch('/api/news_posts');
+        if (!res.ok) throw new Error('Failed to fetch news posts');
+        const data = await res.json();
+        setNewsPosts(data);
+      } catch (error) {
+        console.error(error);
+      }
     }
+    fetchNews();
   }, []);
 
   const openModal = (post) => {
@@ -57,23 +63,23 @@ export default function Actualites() {
                   onClick={() => openModal(post)}
                 >
                   <h5>{post.title}</h5>
-                <small className="text-muted">
-                  {post.date && !isNaN(new Date(post.date)) ? new Date(post.date).toLocaleDateString() : ''}
-                </small>
-                <p>{post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content}</p>
-                {post.attachments && post.attachments.length > 0 && (
-                  <div className="mt-2">
-                    <strong>Fichiers joints:</strong>
-                    <ul>
-                      {post.attachments.map((file, idx) => (
-                        <li key={idx}>
-                          <a href={file.url} target="_blank" rel="noopener noreferrer">{file.name}</a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+                  <small className="text-muted">
+                    {post.date && !isNaN(new Date(post.date)) ? new Date(post.date).toLocaleDateString() : ''}
+                  </small>
+                  <p>{post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content}</p>
+                  {post.attachments && post.attachments.length > 0 && (
+                    <div className="mt-2">
+                      <strong>Fichiers joints:</strong>
+                      <ul>
+                        {post.attachments.map((file, idx) => (
+                          <li key={idx}>
+                            <a href={file.url} target="_blank" rel="noopener noreferrer">{file.name}</a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
 
