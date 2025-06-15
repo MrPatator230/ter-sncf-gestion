@@ -110,6 +110,7 @@ export default function GestionActualites() {
         title: form.title,
         content: form.content,
         date: form.date,
+        icon: iconUrl,
         attachments: attachmentsUrls,
       };
 

@@ -37,10 +37,10 @@ app.get('/news_posts', async (req, res) => {
 
 app.post('/news_posts', async (req, res) => {
   try {
-    const { title, content, date, attachments } = req.body;
+    const { title, content, date, icon, attachments } = req.body;
     const result = await query(
-      'INSERT INTO news_posts (title, content, date, attachments) VALUES (?, ?, ?, ?)',
-      [title, content, date, JSON.stringify(attachments)]
+      'INSERT INTO news_posts (title, content, date, icon, attachments) VALUES (?, ?, ?, ?, ?)',
+      [title, content, date, icon, JSON.stringify(attachments)]
     );
     res.status(201).json({ id: result.insertId });
   } catch (err) {
@@ -52,10 +52,10 @@ app.post('/news_posts', async (req, res) => {
 app.put('/news_posts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, date, attachments } = req.body;
+    const { title, content, date, icon, attachments } = req.body;
     const result = await query(
-      'UPDATE news_posts SET title = ?, content = ?, date = ?, attachments = ? WHERE id = ?',
-      [title, content, date, JSON.stringify(attachments), id]
+      'UPDATE news_posts SET title = ?, content = ?, date = ?, icon = ?, attachments = ? WHERE id = ?',
+      [title, content, date, icon, JSON.stringify(attachments), id]
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'News post not found' });
